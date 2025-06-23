@@ -1,7 +1,9 @@
 'use client'
+
 import React, { useState, useEffect } from 'react';
 import type { JSX } from 'react';
 import dynamic from 'next/dynamic';
+import './markerCluster.css';
 import 'leaflet/dist/leaflet.css';
 import { Calendar, Clock, MapPin, AlertTriangle, Search, Loader2 } from 'lucide-react';
 
@@ -12,6 +14,12 @@ const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.Map
 });
 
 const TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), { ssr: false });
+
+
+const MarkerClusterGroup = dynamic(
+  () => import('react-leaflet-markercluster').then(mod => mod.default),
+  { ssr: false }
+) as React.ComponentType<React.PropsWithChildren<unknown>>;
 const CircleMarker = dynamic(() => import('react-leaflet').then((mod) => mod.CircleMarker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), { ssr: false });
 
@@ -166,6 +174,8 @@ export default function CrimePredictionApp(): JSX.Element {
     }
   };
 
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -314,41 +324,43 @@ export default function CrimePredictionApp(): JSX.Element {
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     />
-                    {predictions.map((prediction, index) => (
-                      <CircleMarker
-                        key={index}
-                        center={[prediction.latitude, prediction.longitude]}
-                        radius={8}
-                        color={getColorByProbability(prediction.probability)}
-                        fillColor={getColorByProbability(prediction.probability)}
-                        fillOpacity={0.7}
-                        weight={2}
-                      >
-                        <Popup maxWidth={300}>
-                          <div className="p-2">
-                            <h3 className="font-semibold mb-2">
-                              {crimeClassDict[prediction.class_id] || prediction.crime_type}
-                            </h3>
-                            <div className="space-y-1 text-sm">
-                              <p><strong>Fecha:</strong> {new Date(prediction.date).toLocaleString()}</p>
-                              <p><strong>Cluster:</strong> {prediction.spatial_cluster}</p>
-                              <p><strong>Probabilidad:</strong> {(prediction.probability * 100).toFixed(2)}%</p>
-                              <p><strong>Nivel de Riesgo:</strong> 
-                                <span className={`ml-1 px-2 py-1 rounded text-xs ${
-                                  getRiskLevel(prediction.probability) === 'Alto' ? 'bg-red-100 text-red-800' :
-                                  getRiskLevel(prediction.probability) === 'Medio' ? 'bg-orange-100 text-orange-800' :
-                                  getRiskLevel(prediction.probability) === 'Bajo' ? 'bg-blue-100 text-blue-800' :
-                                  'bg-green-100 text-green-800'
-                                }`}>
-                                  {getRiskLevel(prediction.probability)}
-                                </span>
-                              </p>
-                              <p><strong>Coordenadas:</strong> {prediction.latitude.toFixed(4)}, {prediction.longitude.toFixed(4)}</p>
+                    <MarkerClusterGroup>
+                      {predictions.map((prediction, index) => (
+                        <CircleMarker
+                          key={index}
+                          center={[prediction.latitude, prediction.longitude]}
+                          radius={8}
+                          color={getColorByProbability(prediction.probability)}
+                          fillColor={getColorByProbability(prediction.probability)}
+                          fillOpacity={0.7}
+                          weight={2}
+                        >
+                          <Popup maxWidth={300}>
+                            <div className="p-2">
+                              <h3 className="font-semibold mb-2">
+                                {crimeClassDict[prediction.class_id] || prediction.crime_type}
+                              </h3>
+                              <div className="space-y-1 text-sm">
+                                <p><strong>Fecha:</strong> {new Date(prediction.date).toLocaleString()}</p>
+                                <p><strong>Cluster:</strong> {prediction.spatial_cluster}</p>
+                                <p><strong>Probabilidad:</strong> {(prediction.probability * 100).toFixed(2)}%</p>
+                                <p><strong>Nivel de Riesgo:</strong>
+                                  <span className={`ml-1 px-2 py-1 rounded text-xs ${getRiskLevel(prediction.probability) === 'Alto' ? 'bg-red-100 text-red-800' :
+                                    getRiskLevel(prediction.probability) === 'Medio' ? 'bg-orange-100 text-orange-800' :
+                                      getRiskLevel(prediction.probability) === 'Bajo' ? 'bg-blue-100 text-blue-800' :
+                                        'bg-green-100 text-green-800'
+                                    }`}>
+                                    {getRiskLevel(prediction.probability)}
+                                  </span>
+                                </p>
+                                <p><strong>Coordenadas:</strong> {prediction.latitude.toFixed(4)}, {prediction.longitude.toFixed(4)}</p>
+                              </div>
                             </div>
-                          </div>
-                        </Popup>
-                      </CircleMarker>
-                    ))}
+                          </Popup>
+                        </CircleMarker>
+                      ))}
+                    </MarkerClusterGroup>
+
                   </MapContainer>
                 </div>
               </div>
@@ -378,12 +390,11 @@ export default function CrimePredictionApp(): JSX.Element {
                           <div className="text-lg font-bold text-gray-900">
                             {(prediction.probability * 100).toFixed(2)}%
                           </div>
-                          <div className={`text-sm px-2 py-1 rounded ${
-                            getRiskLevel(prediction.probability) === 'Alto' ? 'bg-red-100 text-red-800' :
+                          <div className={`text-sm px-2 py-1 rounded ${getRiskLevel(prediction.probability) === 'Alto' ? 'bg-red-100 text-red-800' :
                             getRiskLevel(prediction.probability) === 'Medio' ? 'bg-orange-100 text-orange-800' :
-                            getRiskLevel(prediction.probability) === 'Bajo' ? 'bg-blue-100 text-blue-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
+                              getRiskLevel(prediction.probability) === 'Bajo' ? 'bg-blue-100 text-blue-800' :
+                                'bg-green-100 text-green-800'
+                            }`}>
                             {getRiskLevel(prediction.probability)}
                           </div>
                         </div>
