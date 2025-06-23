@@ -151,7 +151,7 @@ export default function CrimePredictionApp(): JSX.Element {
     try {
       const datetime = `${selectedDate}T${selectedTime}:00`;
       const response = await fetch(
-        `http://localhost:8000/predict_crimes?datetime_str=${encodeURIComponent(datetime)}&top_n=${topN}`
+        `https://crime-predict-452792205673.southamerica-east1.run.app/predict_crimes?datetime_str=${encodeURIComponent(datetime)}&top_n=${topN}`
       );
 
       if (!response.ok) {
