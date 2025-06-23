@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import type { JSX } from 'react';
 import dynamic from 'next/dynamic';
-import './markerCluster.css';
 import 'leaflet/dist/leaflet.css';
 import { Calendar, Clock, MapPin, AlertTriangle, Search, Loader2 } from 'lucide-react';
 
